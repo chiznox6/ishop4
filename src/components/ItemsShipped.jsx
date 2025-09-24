@@ -1,42 +1,41 @@
-import React, { useState, useEffect } from 'react'
-import { TrendingUp } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { TrendingUp } from 'lucide-react';
 
 const ItemsShipped = () => {
-  const [animatedValue, setAnimatedValue] = useState(0)
+  const [shippedAmount, setShippedAmount] = useState(0);
+  const [targetAmount, setTargetAmount] = useState(10000);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    // Simulate fetching data or calculating values
     const timer = setTimeout(() => {
-      setAnimatedValue(6078.76)
-    }, 500)
-    
-    return () => clearTimeout(timer)
-  }, [])
+      const currentShipped = 6078.76;
+      setShippedAmount(currentShipped);
+      const calculatedProgress = (currentShipped / targetAmount) * 100;
+      setProgress(calculatedProgress);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [targetAmount]);
 
   return (
-    <div className="card bg-base-100 shadow-xl">
-      <div className="card-body">
-        <h3 className="card-title text-lg font-semibold mb-2">Items shipped</h3>
-        <p className="text-sm text-gray-500 mb-4">amount in usd</p>
-        
-        <div className="text-center">
-          <div className="text-4xl font-bold text-primary mb-2">
-            ${animatedValue.toLocaleString()}
-          </div>
-          <div className="flex items-center justify-center text-success text-sm mb-6">
-            <TrendingUp size={16} className="mr-1" />
-            Shipment is 45% More than last Month
-          </div>
-          
-          <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
-            <div 
-              className="bg-gradient-to-r from-primary to-secondary h-4 rounded-full progress-animation"
-            ></div>
-          </div>
-          <div className="text-right text-sm font-semibold">80%</div>
-        </div>
+    <div className="card bg-gray-800 shadow-xl p-6 text-white flex flex-col h-full justify-between"> {/* DaisyUI card, added flex for layout */}
+      <div>
+        <h3 className="text-2xl font-bold mb-2 text-left">Items Shipped</h3>
+        <p className="amount-subtitle text-base text-gray-400 text-left mb-4">Total amount of items shipped</p>
+      </div>
+
+      <div className="flex-grow flex flex-col items-center justify-center">
+        <div className="shipped-amount text-7xl font-extrabold mb-2">{shippedAmount.toLocaleString()}</div>
+        <p className="shipped-description text-lg text-gray-400 mb-6">Target: {targetAmount.toLocaleString()}</p>
+      </div>
+
+      <div className="flex items-center justify-center gap-4 w-full">
+        <progress className="progress progress-primary flex-grow h-4" value={progress} max="100"></progress>
+        <span className="progress-value text-xl text-white font-semibold">{progress.toFixed(0)}%</span>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ItemsShipped
+export default ItemsShipped;

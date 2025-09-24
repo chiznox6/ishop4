@@ -1,59 +1,75 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { User, Trophy, ShoppingBag, Package, BarChart2, MessageSquare, 
-         Settings, Heart, History, LogOut } from "lucide-react";
+import { LayoutDashboard, Trophy, ShoppingBag, Package, BarChart2, PieChart, LineChart, LogOut } from "lucide-react";
 
-const Sidebar = () => {
+const Sidebar = ({ logout, user }) => {
   const location = useLocation();
 
   const navItems = [
-    { name: "Dashboard", icon: <User size={20} />, path: "/" },
+    { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/dashboard" },
     { name: "Top Products", icon: <Package size={20} />, path: "/products" },
     { name: "Shipment Summary", icon: <ShoppingBag size={20} />, path: "/shipments" },
     { name: "Items Shipped", icon: <BarChart2 size={20} />, path: "/items-shipped" },
     { name: "Level Comparison", icon: <Trophy size={20} />, path: "/level-comparison" },
-    { name: "Donut Chart", icon: <Heart size={20} />, path: "/donut-chart" },
-    { name: "Sales Graph", icon: <MessageSquare size={20} />, path: "/sales-graph" },
+    { name: "Donut Chart", icon: <PieChart size={20} />, path: "/donut-chart" },
+    { name: "Sales Graph", icon: <LineChart size={20} />, path: "/sales-graph" },
   ];
 
+  const handleSignOut = () => {
+    logout();
+  };
+
   return (
-    <div className="w-64 min-h-screen bg-gray-800 text-white shadow-lg flex flex-col">
+    <aside className="w-64 bg-gray-900 text-gray-100 shadow-xl flex flex-col">
+      
       {/* Profile section */}
       <div className="p-6 border-b border-gray-700">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-3">
           <div className="avatar">
-            <div className="w-12 rounded-full ring ring-primary ring-offset-gray-800 ring-offset-2">
+            <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-gray-900 ring-offset-2 overflow-hidden">
               <img src="https://i.pravatar.cc/100?img=12" alt="Profile" />
             </div>
           </div>
           <div>
-            <h2 className="font-bold text-lg">John Doe</h2>
-            <p className="text-sm text-gray-400">Admin</p>
+            <h2 className="font-bold text-lg hover:text-primary transition-colors duration-300 cursor-default">
+              {user?.username || "Guest"}
+            </h2>
+            <p className="text-sm text-gray-300">{user?.role || "Admin"}</p>
           </div>
         </div>
       </div>
 
       {/* Navigation links */}
       <nav className="flex-1 p-4 space-y-2">
-        {navItems.map((item) => (
-          <Link
-            key={item.name}
-            to={item.path}
-            className={`flex items-center gap-3 p-3 rounded-lg w-full text-left transition-colors duration-200
-              ${location.pathname === item.path ? "bg-gray-700" : "hover:bg-gray-600"}`}
-          >
-            {item.icon} <span>{item.name}</span>
-          </Link>
-        ))}
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.name}
+              to={item.path}
+              className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200
+                ${isActive
+                  ? "bg-primary/20 text-primary font-semibold"
+                  : "hover:bg-gray-700 hover:text-primary"}`}
+              aria-current={isActive ? "page" : undefined}
+            >
+              {item.icon}
+              <span>{item.name}</span>
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Sign Out */}
       <div className="p-4 border-t border-gray-700">
-        <button className="flex items-center gap-3 p-3 rounded-lg w-full text-left hover:bg-red-600 transition-colors duration-200 text-red-400 font-semibold">
+        <button
+          className="btn btn-error w-full justify-start"
+          onClick={handleSignOut}
+        >
           <LogOut size={20} /> <span>Sign Out</span>
         </button>
       </div>
-    </div>
+    </aside>
   );
 };
 

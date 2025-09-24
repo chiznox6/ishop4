@@ -165,14 +165,14 @@ body {
 .progress-bar {
   flex: 1;
   height: 8px;
-  background: #ecf0f1;
+  background-color: theme('colors.gray.200'); /* Using Tailwind's gray-200 */
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: #3498db;
+  background-color: theme('colors.primary'); /* Using DaisyUI's primary color */
   border-radius: 4px;
 }
 
@@ -245,6 +245,12 @@ body {
 
 .min-h-screen {
   min-height: 100vh;
+}
+
+.dashboard-background {
+  background-image: url('https://drive.google.com/uc?export=view&id=1qHb8jyLR0d9rfZcvFImfJeV38sQ3sRaz');
+  background-size: cover;
+  background-position: center;
 }
 
 /* Sidebar styling */
