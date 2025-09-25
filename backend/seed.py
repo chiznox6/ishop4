@@ -1,5 +1,5 @@
 from app import app
-from models import db, Product, User, Order, OrderItem
+from models import db, Product, User, Order, OrderItem, SalesData, ProductCategoryData, ShipmentSummaryData, AffiliateSource, MockAmazonProduct
 from faker import Faker
 import random
 
@@ -12,6 +12,7 @@ with app.app_context():
     Order.query.delete()
     Product.query.delete()
     User.query.delete()
+    AffiliateSource.query.delete() # Added this line
     db.session.commit()
 
     print("Creating users...")
@@ -24,6 +25,11 @@ with app.app_context():
         user.password_hash = "password" # All users have password 'password'
         users.append(user)
         db.session.add(user)
+    db.session.commit()
+
+    print("Creating affiliate sources...")
+    default_affiliate_source = AffiliateSource(name="Default Affiliate", base_url="https://default.affiliate.com/")
+    db.session.add(default_affiliate_source)
     db.session.commit()
 
     print("Creating curated products...")
@@ -144,7 +150,9 @@ with app.app_context():
             description=product_data["description"],
             image_url=product_data["image_url"],
             stock=product_data["stock"],
-            category=product_data["category"]
+            category=product_data["category"],
+            affiliate_link=f"{default_affiliate_source.base_url}product/{product_data['name'].replace(' ', '-')}", # Dummy link
+            affiliate_source_id=default_affiliate_source.id
         )
         products.append(product)
         db.session.add(product)
@@ -179,5 +187,77 @@ with app.app_context():
                 order_total += (quantity * product.price)
             order.total_amount = order_total
             db.session.commit()
+
+
+
+    print("Creating Mock Amazon Products...")
+    mock_amazon_products_data = [
+        {
+            "asin": "B07XQ5X1Y1",
+            "title": "Echo Dot (3rd Gen) - Smart speaker with Alexa",
+            "image_url": "https://m.media-amazon.com/images/I/61WUqJd4TsL._AC_SL1000_.jpg",
+            "price": 39.99,
+            "rating": 4.7,
+            "review_count": 800000,
+            "description": "Our most popular smart speaker with a fabric design. It's our most compact smart speaker that fits perfectly into small spaces.",
+            "category": "Electronics"
+        },
+        {
+            "asin": "B08KJN3333",
+            "title": "New Apple AirPods Pro",
+            "image_url": "https://m.media-amazon.com/images/I/71bhWgQK-cL._AC_SL1500_.jpg",
+            "price": 249.00,
+            "rating": 4.8,
+            "review_count": 500000,
+            "description": "Active Noise Cancellation for immersive sound. Transparency mode for hearing what’s happening around you. A customizable fit for all-day comfort.",
+            "category": "Electronics"
+        },
+        {
+            "asin": "B08N5KJM12",
+            "title": "Fire TV Stick 4K Max streaming device",
+            "image_url": "https://m.media-amazon.com/images/I/61XG9y+3CPL._AC_SL1000_.jpg",
+            "price": 54.99,
+            "rating": 4.7,
+            "review_count": 300000,
+            "description": "Powerful 4K streaming stick with Wi-Fi 6 support and Alexa Voice Remote.",
+            "category": "Electronics"
+        },
+        {
+            "asin": "B08C56V1G1",
+            "title": "All-new Kindle Paperwhite (8 GB)",
+            "image_url": "https://m.media-amazon.com/images/I/61GRw4y+0gL._AC_SL1000_.jpg",
+            "price": 139.99,
+            "rating": 4.6,
+            "review_count": 150000,
+            "description": "Now with a 6.8” display and a thinner bezel, adjustable warm light, up to 10 weeks of battery life, and 20% faster page turns.",
+            "category": "Books"
+        },
+        {
+            "asin": "B08CVQG62D",
+            "title": "Instant Pot Duo 7-in-1 Electric Pressure Cooker, Slow Cooker, Rice Cooker, Steamer, Sauté, Yogurt Maker, Warmer & Sterilizer, 6 Quart",
+            "image_url": "https://m.media-amazon.com/images/I/71o0y4-b-BL._AC_SL1500_.jpg",
+            "price": 99.99,
+            "rating": 4.7,
+            "review_count": 1200000,
+            "description": "The Instant Pot Duo is a 7-in-1 multi-functional cooker that does the job of a pressure cooker, slow cooker, rice cooker, steamer, sauté pan, yogurt maker and food warmer.",
+            "category": "Home & Kitchen"
+        }
+    ]
+
+    mock_amazon_products = []
+    for product_data in mock_amazon_products_data:
+        product = MockAmazonProduct(
+            asin=product_data["asin"],
+            title=product_data["title"],
+            image_url=product_data["image_url"],
+            price=product_data["price"],
+            rating=product_data["rating"],
+            review_count=product_data["review_count"],
+            description=product_data["description"],
+            category=product_data["category"]
+        )
+        mock_amazon_products.append(product)
+        db.session.add(product)
+    db.session.commit()
 
     print("Database seeded!")

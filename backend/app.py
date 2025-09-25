@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, session # Import session
 from flask_cors import CORS
 from flask_migrate import Migrate
-from models import db, bcrypt, User, Product, Order, OrderItem # Import bcrypt, use OrderItem
+from models import db, bcrypt, User, Product, AffiliateSource, Order, OrderItem, SalesData, ProductCategoryData, ShipmentSummaryData, MockAmazonProduct
 from config import DATABASE
 from functools import wraps # Import functools for wraps
 
@@ -88,6 +88,12 @@ def check_session():
         if user:
             return jsonify(user.to_dict())
     return jsonify({'message': 'Not logged in'}), 401
+
+# Logout Route
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user_id', None)
+    return jsonify({'message': 'Logged out successfully'}), 200
 
 
 # Product Routes (Full CRUD)
@@ -254,5 +260,49 @@ def orders():
         db.session.commit()
         return jsonify(new_order.to_dict()), 201
 
-if __name__ == '__main__':
-    app.run(port=5555, debug=True)
+# Business Overview Routes
+@app.route('/sales-data', methods=['GET'])
+def get_sales_data():
+    sales_data = SalesData.query.all()
+    return jsonify([data.to_dict() for data in sales_data])
+
+@app.route('/product-categories', methods=['GET'])
+def get_product_categories():
+    product_categories = ProductCategoryData.query.all()
+    return jsonify([data.to_dict() for data in product_categories])
+
+@app.route('/shipment-summary', methods=['GET'])
+def get_shipment_summary():
+    shipment_summary = ShipmentSummaryData.query.all()
+    return jsonify([data.to_dict() for data in shipment_summary])
+    
+    # Mock Amazon API Routes
+    @app.route('/amazon/search', methods=['GET'])
+    def amazon_search():
+        query = request.args.get('query', '')
+        # For simplicity, search by title containing the query
+        results = MockAmazonProduct.query.filter(MockAmazonProduct.title.ilike(f'%{query}%')).all()
+        return jsonify([product.to_dict() for product in results])
+    
+    @app.route('/amazon/product/<asin>', methods=['GET'])
+    def amazon_product(asin):
+        product = MockAmazonProduct.query.filter_by(asin=asin).first()
+        if product:
+            return jsonify(product.to_dict())
+        return jsonify({'error': 'Product not found'}), 404
+    
+    @app.route('/amazon/product/<asin>/reviews', methods=['GET'])
+    def amazon_product_reviews(asin):
+        # For simplicity, return a generic mock review or just product details
+        product = MockAmazonProduct.query.filter_by(asin=asin).first()
+        if product:
+            # Mock reviews - in a real app, this would be a separate model/data
+            mock_reviews = [
+                {"author": "User123", "rating": 5, "comment": f"Great product! Exactly as described for {product.title}."},
+                {"author": "ReviewerX", "rating": 4, "comment": f"Very satisfied with {product.title}. Fast shipping."},
+            ]
+            return jsonify({"product_asin": asin, "reviews": mock_reviews})
+        return jsonify({'error': 'Product not found'}), 404
+    
+    if __name__ == '__main__':
+        app.run(port=5555, debug=True)
