@@ -4,8 +4,8 @@ import { AuthContext } from '../App';
 import { logoutUser, fetchCart } from '../services/api';
 import { Search, Heart, ShoppingCart } from 'lucide-react';
 
-const Layout = ({ children }) => {
-  const { user, handleLogout } = useContext(AuthContext);
+const Layout = ({ children, cartRefreshTrigger }) => { // Accept cartRefreshTrigger as prop
+  const { user, logout } = useContext(AuthContext);
   const [cartItemCount, setCartItemCount] = useState(0);
 
   useEffect(() => {
@@ -24,12 +24,12 @@ const Layout = ({ children }) => {
       }
     };
     getCartItemCount();
-  }, [user]); // Re-fetch cart count when user logs in/out
+  }, [user, cartRefreshTrigger]); // Re-fetch cart count when user logs in/out or cart is refreshed
 
   const onLogout = async () => {
     try {
       await logoutUser();
-      handleLogout();
+      logout();
     } catch (error) {
       console.error('Logout failed:', error);
       alert('Failed to log out.');

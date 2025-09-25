@@ -7,16 +7,7 @@ import ItemsShipped from './ItemsShipped';
 import LevelComparison from './LevelComparison';
 import DonutChart from './DonutChart';
 import BusinessOverview from './BusinessOverview';
-
-// Mock data for metrics
-const mockMetrics = {
-  totalRevenue: 12485,
-  totalOrders: 89,
-  totalProducts: 156,
-  totalUsers: 45,
-  averageOrderValue: 140.29,
-  conversionRate: 3.2
-};
+import { fetchTotalSales } from '../services/api'; // Import fetchTotalSales
 
 const MetricCard = ({ title, value, change, icon: Icon, color = 'primary' }) => {
   const colorClasses = {
@@ -54,13 +45,21 @@ const MetricCard = ({ title, value, change, icon: Icon, color = 'primary' }) => 
 
 function Dashboard() {
   const [loading, setLoading] = useState(true);
+  const [totalSales, setTotalSales] = useState(0); // State for total sales
 
   useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    const loadDashboardData = async () => {
+      try {
+        const salesData = await fetchTotalSales();
+        setTotalSales(salesData.total_sales);
+      } catch (error) {
+        console.error("Failed to fetch total sales:", error);
+        setTotalSales(0); // Set to 0 or handle error display
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDashboardData();
   }, []);
 
   if (loading) {
@@ -95,48 +94,13 @@ function Dashboard() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <MetricCard 
-          title="Total Revenue" 
-          value={`$${mockMetrics.totalRevenue.toLocaleString()}`}
-          change="+12.5% from last month"
-          icon={DollarSign}
-          color="success"
-        />
-        <MetricCard 
-          title="Total Orders" 
-          value={mockMetrics.totalOrders}
-          change="+8.2% from last month"
-          icon={ShoppingCart}
-          color="primary"
-        />
-        <MetricCard 
-          title="Total Products" 
-          value={mockMetrics.totalProducts}
-          change="+15 new products"
-          icon={Package}
-          color="info"
-        />
-        <MetricCard 
-          title="Active Users" 
-          value={mockMetrics.totalUsers}
-          change="+5.1% from last month"
-          icon={Users}
-          color="warning"
-        />
-        <MetricCard 
-          title="Avg Order Value" 
-          value={`$${mockMetrics.averageOrderValue}`}
-          change="+3.2% from last month"
-          icon={TrendingUp}
-          color="success"
-        />
-        <MetricCard 
-          title="Conversion Rate" 
-          value={`${mockMetrics.conversionRate}%`}
-          change="-0.8% from last month"
-          icon={Eye}
-          color="error"
-        />
+                <MetricCard
+                  title="Total Revenue"
+                  value={`$${totalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  change="+12.5% from last month" // Keep mock change for now
+                  icon={DollarSign}
+                  color="success"
+                />
       </div>
 
       {/* Charts and Analytics */}

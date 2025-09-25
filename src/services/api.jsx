@@ -46,9 +46,17 @@ export const logoutUser = async () => {
     }
 };
 
-export const fetchProducts = async () => {
+export const fetchProducts = async (filters = {}) => {
     try {
-        const response = await fetch(`${API_BASE}/products`);
+        const params = new URLSearchParams();
+        if (filters.search) params.append('search', filters.search);
+        if (filters.category && filters.category !== 'All') params.append('category', filters.category);
+        if (filters.min_price) params.append('min_price', filters.min_price);
+        if (filters.max_price) params.append('max_price', filters.max_price);
+        if (filters.min_rating) params.append('min_rating', filters.min_rating);
+
+        const url = `${API_BASE}/products?${params.toString()}`;
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error('Failed to fetch products');
         }
@@ -213,6 +221,33 @@ export async function fetchShipmentSummary() {
   if (!res.ok) {
     const errorData = await res.json();
     throw new Error(errorData.error || "Failed to fetch shipment summary");
+  }
+  return res.json();
+}
+
+export async function fetchTotalSales() {
+  const res = await fetch(`${API_BASE}/total-sales`);
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Failed to fetch total sales data");
+  }
+  return res.json();
+}
+
+export async function fetchBrands() {
+  const res = await fetch(`${API_BASE}/brands`);
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Failed to fetch brands data");
+  }
+  return res.json();
+}
+
+export async function fetchDeals() {
+  const res = await fetch(`${API_BASE}/deals`);
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Failed to fetch deals data");
   }
   return res.json();
 }

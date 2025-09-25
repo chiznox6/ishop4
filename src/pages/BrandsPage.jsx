@@ -1,27 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE } from '../services/api';
+import { fetchBrands } from '../services/api'; // Import fetchBrands from api.jsx
 
 const BrandsPage = () => {
   const [brands, setBrands] = useState([]);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const fetchBrands = async () => {
+    const loadBrands = async () => { // Renamed to loadBrands to avoid confusion
       try {
-        const response = await fetch(`${API_BASE}/brands`);
-        const data = await response.json();
-        if (response.ok) {
-          setBrands(data.brands);
-          setMessage(data.message);
-        } else {
-          setMessage(data.error || 'Failed to fetch brands');
-        }
+        const data = await fetchBrands(); // Call the imported fetchBrands
+        setBrands(data); // Backend returns a list of strings directly
+        setMessage(''); // Clear any previous message on success
       } catch (error) {
-        setMessage('Error connecting to the server.');
+        setMessage(error.message || 'Failed to fetch brands');
         console.error('Error fetching brands:', error);
       }
     };
-    fetchBrands();
+    loadBrands();
   }, []);
 
   return (

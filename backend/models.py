@@ -55,6 +55,7 @@ class Product(db.Model, SerializerMixin):
     description = db.Column(db.String(255))
     image_url = db.Column(db.String)
     category = db.Column(db.String)
+    rating = db.Column(db.Float, nullable=True) # Added rating column
     stock = db.Column(db.Integer, nullable=False, default=0) # Added stock column
     affiliate_link = db.Column(db.String(500), nullable=False) # The actual affiliate link for the product
     affiliate_source_id = db.Column(db.Integer, db.ForeignKey('affiliate_sources.id'), nullable=False)

@@ -112,9 +112,15 @@ function App() {
     }
   };
 
+  const [cartRefreshTrigger, setCartRefreshTrigger] = useState(0); // State to trigger cart refresh
+
+  const triggerCartRefresh = () => {
+    setCartRefreshTrigger(prev => prev + 1);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
-      <Layout>
+    <AuthContext.Provider value={{ user, setUser, loading, logout, triggerCartRefresh }}>
+      <Layout cartRefreshTrigger={cartRefreshTrigger}>
         <AppRoutes />
       </Layout>
     </AuthContext.Provider>

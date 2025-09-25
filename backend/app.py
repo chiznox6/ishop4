@@ -100,7 +100,43 @@ def logout():
 @app.route('/products', methods=['GET', 'POST'])
 def products():
     if request.method == 'GET':
-        products = Product.query.all()
+        query = Product.query
+
+        # Filtering by search term (name or description)
+        search_term = request.args.get('search')
+        if search_term:
+            query = query.filter(
+                (Product.name.ilike(f'%{search_term}%')) |
+                (Product.description.ilike(f'%{search_term}%'))
+            )
+
+        # Filtering by category
+        category = request.args.get('category')
+        if category and category != 'All':
+            query = query.filter(Product.category == category)
+
+        # Filtering by price range
+        min_price = request.args.get('min_price', type=float)
+        if min_price is not None:
+            query = query.filter(Product.price >= min_price)
+
+        max_price = request.args.get('max_price', type=float)
+        if max_price is not None:
+            query = query.filter(Product.price <= max_price)
+
+        # Filtering by minimum rating (assuming Product model has a 'rating' field)
+        # NOTE: The Product model currently does NOT have a a 'rating' field.
+        # For this filter to work, a 'rating' column would need to be added to the Product model.
+        # For now, this filter will be included but will not function correctly without the column.
+        min_rating = request.args.get('min_rating', type=float)
+        if min_rating is not None:
+            # This line will cause an error if Product.rating does not exist
+            # For now, we'll assume it might be added later or handle it gracefully
+            # If Product.rating is not added, this filter will effectively do nothing or raise an error
+            query = query.filter(Product.rating >= min_rating)
+
+
+        products = query.all()
         return jsonify([product.to_dict() for product in products])
     elif request.method == 'POST':
         data = request.json
@@ -303,6 +339,33 @@ def get_shipment_summary():
             ]
             return jsonify({"product_asin": asin, "reviews": mock_reviews})
         return jsonify({'error': 'Product not found'}), 404
-    
-    if __name__ == '__main__':
-        app.run(port=5555, debug=True)
+
+# Dashboard Metrics Routes
+@app.route('/total-sales', methods=['GET'])
+def get_total_sales():
+    # Calculate total sales from orders that are 'Processed' or 'Delivered'
+    total_sales = db.session.query(db.func.sum(Order.total_amount)).filter(
+        Order.status.in_(['Processed', 'Delivered'])
+    ).scalar()
+    return jsonify({'total_sales': total_sales if total_sales is not None else 0})
+
+# Brands Routes
+@app.route('/brands', methods=['GET'])
+def get_brands():
+    # For simplicity, return unique product categories as brands
+    unique_categories = db.session.query(Product.category).distinct().all()
+    brands = [category[0] for category in unique_categories if category[0]] # Extract string and filter None
+    return jsonify(brands)
+
+# Deals Routes
+@app.route('/deals', methods=['GET'])
+def get_deals():
+    # For simplicity, return a random subset of products as 'deals'
+    all_products = Product.query.all()
+    # Select a random subset, e.g., 10% of products or a fixed number
+    num_deals = min(10, len(all_products)) # Max 10 deals
+    deals = random.sample(all_products, num_deals) if all_products else []
+    return jsonify([product.to_dict() for product in deals])
+
+if __name__ == '__main__':
+    app.run(port=5555, debug=True)
