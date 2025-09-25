@@ -30,7 +30,7 @@ export async function signupUser(username, email, password) {
 
 export const logoutUser = async () => {
     try {
-        const response = await fetch(`${API_URL}/logout`, {
+        const response = await fetch(`${API_BASE}/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export const logoutUser = async () => {
 
 export const fetchProducts = async () => {
     try {
-        const response = await fetch(`${API_URL}/products`);
+        const response = await fetch(`${API_BASE}/products`);
         if (!response.ok) {
             throw new Error('Failed to fetch products');
         }

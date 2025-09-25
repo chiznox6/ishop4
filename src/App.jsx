@@ -1,16 +1,15 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
 import { Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
-import ShopNavbar from "./components/ShopNavbar";
 import { checkSession, logoutUser } from "./services/api"; // Import checkSession and logoutUser
+import Layout from "./components/Layout"; // Import the Layout component
 
 // Dashboard components
 import Dashboard from "./components/Dashboard";
 
 // Shop pages
-
-// Shop pages
 import LoginPage from "./pages/LoginPage";
-import ShoppingPage from "./pages/ShoppingPage";
+import HomePage from "./pages/HomePage";
+import ShopPage from "./pages/ShopPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmationPage from "./pages/OrderConfirmationPage"; // Import the new page
@@ -48,31 +47,6 @@ const LoginRedirect = () => {
   return <LoginPage />;
 };
 
-import Breadcrumbs from "./components/Breadcrumbs"; // Import Breadcrumbs component
-
-// Layout component
-function Layout({ children }) {
-  const location = useLocation();
-  const { user, logout } = useContext(AuthContext); // Access user and logout from context
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar visibility
-
-  // Hide sidebar and breadcrumbs on login page
-  const hideLayoutElementsRoutes = ["/login"];
-  const hideLayoutElements = hideLayoutElementsRoutes.includes(location.pathname);
-
-  return (
-    <div className="flex min-h-screen bg-gray-900"> {/* Changed to a darker background color */}
-      <div className="flex-1 flex flex-col">
-        {!hideLayoutElements && <ShopNavbar onLogout={logout} user={user} />} {/* Pass toggleSidebar to ShopNavbar */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-800 p-6"> {/* Changed to a darker background color and padding */}
-          {!hideLayoutElements && <Breadcrumbs />}
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}
-
 function AppRoutes() {
   return (
     <Routes>
@@ -80,8 +54,8 @@ function AppRoutes() {
       <Route path="/login" element={<LoginRedirect />} />
 
       {/* Public routes */}
-      <Route path="/" element={<ShoppingPage />} /> {/* Default route to shopping page */}
-      <Route path="/shop" element={<ShoppingPage />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/shop" element={<ShopPage />} />
       <Route path="/dashboard" element={<Dashboard />} /> {/* Dashboard can be public too */}
 
       {/* Protected routes (for purchasing) */}
@@ -89,7 +63,7 @@ function AppRoutes() {
       <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
       <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
 
-      {/* Redirect any unknown paths to the shopping page */}
+      {/* Redirect any unknown paths to the home page */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

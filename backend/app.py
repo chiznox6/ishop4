@@ -38,8 +38,7 @@ def users():
         return jsonify([user.to_dict() for user in users])
     elif request.method == 'POST':
         data = request.json
-        new_user = User(username=data['username'], email=data['email'])
-        new_user.set_password(data['password']) # Set password using the new method
+        new_user = User(username=data['username'], email=data['email'], password_hash=data['password'])
         db.session.add(new_user)
         db.session.commit()
         return jsonify(new_user.to_dict()), 201
@@ -60,8 +59,7 @@ def signup():
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already exists'}), 409
 
-    new_user = User(username=username, email=email)
-    new_user.set_password(password)
+    new_user = User(username=username, email=email, password_hash=password)
     db.session.add(new_user)
     db.session.commit()
     session['user_id'] = new_user.id # Log in the user after signup
@@ -80,12 +78,6 @@ def login():
         session['user_id'] = user.id
         return jsonify(user.to_dict()), 200
     return jsonify({'error': 'Invalid credentials'}), 401
-
-# Logout Route
-@app.route('/logout', methods=['POST'])
-def logout():
-    session.pop('user_id', None)
-    return jsonify({'message': 'Logged out successfully'}), 200
 
 # Check session (who is logged in)
 @app.route('/check_session', methods=['GET'])
