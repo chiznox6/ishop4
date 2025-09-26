@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Search, ShoppingCart, Filter, Star } from 'lucide-react';
 import { fetchProducts, addToCart } from '../services/api';
 import { AuthContext } from '../App';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate, useLocation } from 'react-router-dom'; // Import useNavigate and useLocation
 
 function ShopPage() {
   const [products, setProducts] = useState([]);
@@ -16,6 +16,7 @@ function ShopPage() {
   const [addingToCart, setAddingToCart] = useState(null);
   const { user, triggerCartRefresh } = useContext(AuthContext); // Get triggerCartRefresh from context
   const navigate = useNavigate(); // Initialize useNavigate
+  const location = useLocation(); // Initialize useLocation
 
   const categories = ['All', 'Electronics', 'Fashion', 'Home & Kitchen', 'Sports', 'Books', 'Beauty'];
 
@@ -40,6 +41,12 @@ function ShopPage() {
   );
 
   useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const searchFromUrl = queryParams.get('search');
+    if (searchFromUrl && searchFromUrl !== searchTerm) {
+      setSearchTerm(searchFromUrl);
+    }
+
     const filters = {
       search: searchTerm,
       category: selectedCategory,
@@ -48,7 +55,7 @@ function ShopPage() {
       min_rating: minRating,
     };
     debouncedLoadProducts(filters); // Use debounced version
-  }, [searchTerm, selectedCategory, minPrice, maxPrice, minRating, debouncedLoadProducts]); // Depend on all filter states and debouncedLoadProducts
+  }, [searchTerm, selectedCategory, minPrice, maxPrice, minRating, debouncedLoadProducts, location.search]); // Depend on all filter states and debouncedLoadProducts and location.search
 
   const loadProducts = async (filters) => {
     setLoading(true); // Set loading to true when fetching new data
@@ -73,7 +80,7 @@ function ShopPage() {
     try {
       await addToCart(productId, 1);
       triggerCartRefresh(); // Trigger cart refresh in Layout
-      navigate('/cart'); // Redirect to cart page
+      navigate('/checkout'); // Redirect to checkout page
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add item to cart');

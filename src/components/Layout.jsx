@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
 import { logoutUser, fetchCart } from '../services/api';
 import { Search, Heart, ShoppingCart } from 'lucide-react';
@@ -7,6 +7,8 @@ import { Search, Heart, ShoppingCart } from 'lucide-react';
 const Layout = ({ children, cartRefreshTrigger }) => { // Accept cartRefreshTrigger as prop
   const { user, logout } = useContext(AuthContext);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [searchTerm, setSearchTerm] = useState(''); // State for search input
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     const getCartItemCount = async () => {
@@ -36,6 +38,14 @@ const Layout = ({ children, cartRefreshTrigger }) => { // Accept cartRefreshTrig
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm(''); // Clear search term after navigating
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-black text-gray-200 font-display">
       <header className="bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10 border-b border-gray-700">
@@ -58,12 +68,18 @@ const Layout = ({ children, cartRefreshTrigger }) => { // Accept cartRefreshTrig
               </nav>
             </div>
             <div className="flex items-center gap-4">
-              <div className="relative hidden sm:block">
+              <form onSubmit={handleSearch} className="relative hidden sm:block">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                   <Search className="h-5 w-5 text-gray-400" />
                 </span>
-                <input className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-700 border-transparent focus:ring-primary focus:border-primary text-white placeholder-gray-400" placeholder="Search" type="search" />
-              </div>
+                <input
+                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-700 border-transparent focus:ring-primary focus:border-primary text-white placeholder-gray-400"
+                  placeholder="Search"
+                  type="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </form>
               <button className="p-2 rounded-lg hover:bg-primary/20 text-gray-300 hover:text-primary transition-colors">
                 <Heart className="h-6 w-6" />
               </button>
@@ -76,6 +92,7 @@ const Layout = ({ children, cartRefreshTrigger }) => { // Accept cartRefreshTrig
               {user ? (
                 <div className="flex items-center gap-2">
                   <img alt="User avatar" className="size-9 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAg2LrLXQsZlrBHrB8fs_JmVomx9vO8BU76Iv2J6aZNKKw4LkWE1mVtymaJjbyThkv95l_5lXJBgoDXDCOoVba9paiwELJlyZLhH80pzm9Z-fOTv-q2P9In2D70Iqq-Ze50zs2v__mbPKDsbug9_Pw7yG4raDjOwfT8Pq8yv8SPn2noj04ptOiXfs6lm0fG33kGqamCCjdEfMnl5kWtvH7t7-daKS_48xUSQnfxQFYKVDdW3isQUXUubwT_19iEMWl6KRWEpUhA6is"/>
+                  <span className="text-sm font-medium text-white hidden md:block">{user.username}</span>
                   <button onClick={onLogout} className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Logout</button>
                 </div>
               ) : (

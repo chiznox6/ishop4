@@ -1,17 +1,23 @@
 from flask import Flask, request, jsonify, session # Import session
 from flask_cors import CORS
 from flask_migrate import Migrate
-from models import db, bcrypt, User, Product, AffiliateSource, Order, OrderItem, SalesData, ProductCategoryData, ShipmentSummaryData, MockAmazonProduct
+from models import db, bcrypt, User, Product, AffiliateSource, Order, OrderItem, SalesData, ProductCategoryData, ShipmentSummaryData, MockAmazonProduct, Brand # Import Brand
 from config import DATABASE
 from functools import wraps # Import functools for wraps
+import random # Import random
+import os # Import os
+from faker import Faker # Import Faker for fake data
+
+fake = Faker()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
-app.secret_key = 'your_secret_key' # Add a secret key for session management
+app.secret_key = os.environ.get('SECRET_KEY', 'a_very_secret_and_random_key_that_should_be_changed_in_production') # Use environment variable for secret key
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax' # Explicitly set SameSite policy
 
-CORS(app)
+CORS(app, supports_credentials=True)
 migrate = Migrate(app, db)
 db.init_app(app)
 bcrypt.init_app(app) # Initialize bcrypt with the app
@@ -68,11 +74,21 @@ def signup():
 # Login Route
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.json
+    data = request.get_json()
+    email = data.get('email')
     username = data.get('username')
     password = data.get('password')
 
-    user = User.query.filter_by(username=username).first()
+    if not password:
+        return jsonify({'error': 'Password is required'}), 400
+
+    user = None
+    if email:
+        user = User.query.filter_by(email=email).first()
+    elif username:
+        user = User.query.filter_by(username=username).first()
+    else:
+        return jsonify({'error': 'Email or username is required'}), 400
 
     if user and user.check_password(password):
         session['user_id'] = user.id
@@ -94,6 +110,33 @@ def check_session():
 def logout():
     session.pop('user_id', None)
     return jsonify({'message': 'Logged out successfully'}), 200
+
+# Brands Routes
+@app.route('/brands', methods=['GET'])
+def get_brands():
+    brands = Brand.query.all()
+    return jsonify([brand.to_dict() for brand in brands])
+
+@app.route('/brands/seed', methods=['POST'])
+def seed_brands():
+    if Brand.query.first():
+        return jsonify({'message': 'Brands already seeded'}), 200
+
+    brand_names = [
+        "Tech Innovators", "Fashion Forward", "Home Essentials",
+        "Gourmet Foods", "Outdoor Adventures", "Artistic Creations",
+        "Wellness Hub", "Pet Paradise", "Bookworm Haven", "Gaming Gear"
+    ]
+    for name in brand_names:
+        new_brand = Brand(
+            name=name,
+            description=fake.paragraph(nb_sentences=3),
+            logo_url=f"https://via.placeholder.com/150/CCCCCC/FFFFFF?text={name.replace(' ', '+')}"
+        )
+        db.session.add(new_brand)
+    db.session.commit()
+    return jsonify({'message': 'Brands seeded successfully!'}), 201
+
 
 
 # Product Routes (Full CRUD)
@@ -349,23 +392,34 @@ def get_total_sales():
     ).scalar()
     return jsonify({'total_sales': total_sales if total_sales is not None else 0})
 
-# Brands Routes
-@app.route('/brands', methods=['GET'])
-def get_brands():
-    # For simplicity, return unique product categories as brands
-    unique_categories = db.session.query(Product.category).distinct().all()
-    brands = [category[0] for category in unique_categories if category[0]] # Extract string and filter None
-    return jsonify(brands)
+# Apply Deals Route
+@app.route('/products/apply_deals', methods=['POST'])
+def apply_deals():
+    products_to_deal = Product.query.filter(Product.deal_percentage == 0.0).all()
+    if not products_to_deal:
+        return jsonify({'message': 'No products available to apply deals or deals already applied.'}), 200
+
+    # Apply deals to a random subset of products (e.g., 20% of available products)
+    num_deals_to_apply = max(1, len(products_to_deal) // 5) # At least 1, or 20%
+    selected_products = random.sample(products_to_deal, num_deals_to_apply)
+
+    for product in selected_products:
+        product.deal_percentage = round(random.uniform(0.1, 0.5), 2) # 10% to 50% discount
+        db.session.add(product)
+    db.session.commit()
+    return jsonify({'message': f'{num_deals_to_apply} deals applied successfully!'}), 200
 
 # Deals Routes
 @app.route('/deals', methods=['GET'])
 def get_deals():
-    # For simplicity, return a random subset of products as 'deals'
-    all_products = Product.query.all()
-    # Select a random subset, e.g., 10% of products or a fixed number
-    num_deals = min(10, len(all_products)) # Max 10 deals
-    deals = random.sample(all_products, num_deals) if all_products else []
-    return jsonify([product.to_dict() for product in deals])
+    deals = Product.query.filter(Product.deal_percentage > 0).all()
+    deals_data = []
+    for product in deals:
+        product_dict = product.to_dict()
+        product_dict['original_price'] = product.price
+        product_dict['deal_price'] = round(product.price * (1 - product.deal_percentage), 2)
+        deals_data.append(product_dict)
+    return jsonify(deals_data)
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

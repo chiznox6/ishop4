@@ -59,6 +59,7 @@ class Product(db.Model, SerializerMixin):
     stock = db.Column(db.Integer, nullable=False, default=0) # Added stock column
     affiliate_link = db.Column(db.String(500), nullable=False) # The actual affiliate link for the product
     affiliate_source_id = db.Column(db.Integer, db.ForeignKey('affiliate_sources.id'), nullable=False)
+    deal_percentage = db.Column(db.Float, default=0.0) # New column for deals
 
     order_items = db.relationship('OrderItem', backref='product', lazy=True)
 
@@ -146,3 +147,13 @@ class MockAmazonProduct(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f'<MockAmazonProduct {self.title} ({self.asin})>'
+
+class Brand(db.Model, SerializerMixin):
+    __tablename__ = 'brands'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    logo_url = db.Column(db.String(500))
+
+    serialize_rules = ()

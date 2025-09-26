@@ -13,6 +13,9 @@ import ShopPage from "./pages/ShopPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmationPage from "./pages/OrderConfirmationPage"; // Import the new page
+import DealsPage from "./pages/DealsPage"; // Import DealsPage
+import BrandsPage from "./pages/BrandsPage"; // Import BrandsPage
+import SignupPage from "./pages/SignupPage"; // Import SignupPage
 
 // Create an AuthContext
 export const AuthContext = createContext(null);
@@ -50,13 +53,16 @@ const LoginRedirect = () => {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public route */}
+      {/* Public routes */}
       <Route path="/login" element={<LoginRedirect />} />
+      <Route path="/signup" element={<SignupPage />} />
 
       {/* Public routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/dashboard" element={<Dashboard />} /> {/* Dashboard can be public too */}
+      <Route path="/deals" element={<DealsPage />} />
+      <Route path="/brands" element={<BrandsPage />} />
 
       {/* Protected routes (for purchasing) */}
       <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />

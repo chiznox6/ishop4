@@ -2,11 +2,19 @@
 const API_BASE = "http://127.0.0.1:5555"; // Changed to local Flask backend URL
 
 // --- Authentication API functions ---
-export async function loginUser(username, password) {
+export async function loginUser(loginIdentifier, password) {
+  const payload = { password };
+  if (loginIdentifier.includes('@')) {
+    payload.email = loginIdentifier;
+  } else {
+    payload.username = loginIdentifier;
+  }
+
   const res = await fetch(`${API_BASE}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify(payload),
+    credentials: 'include',
   });
   if (!res.ok) {
     const errorData = await res.json();
@@ -20,6 +28,7 @@ export async function signupUser(username, email, password) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, email, password }),
+    credentials: 'include',
   });
   if (!res.ok) {
     const errorData = await res.json();
@@ -35,6 +44,7 @@ export const logoutUser = async () => {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
         });
         if (!response.ok) {
             throw new Error('Logout failed');
@@ -68,7 +78,9 @@ export const fetchProducts = async (filters = {}) => {
 };
 
 export async function checkSession() {
-  const res = await fetch(`${API_BASE}/check_session`);
+  const res = await fetch(`${API_BASE}/check_session`, {
+    credentials: 'include',
+  });
   return res.json();
 }
 
@@ -103,7 +115,9 @@ export async function getAmazonReviews(asin, page = 1, sort_by = "TOP_REVIEWS", 
 
 // --- Cart API functions ---
 export async function fetchCart() {
-  const res = await fetch(`${API_BASE}/cart`);
+  const res = await fetch(`${API_BASE}/cart`, {
+    credentials: 'include',
+  });
   if (!res.ok) {
     const errorData = await res.json();
     throw new Error(errorData.error || "Failed to fetch cart");
@@ -116,6 +130,7 @@ export async function addToCart(productId, quantity = 1) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ product_id: productId, quantity }),
+    credentials: 'include',
   });
   if (!res.ok) {
     const errorData = await res.json();
@@ -129,6 +144,7 @@ export async function updateCartItemQuantity(productId, quantity) {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ quantity }),
+    credentials: 'include',
   });
   if (!res.ok) {
     const errorData = await res.json();
@@ -140,6 +156,7 @@ export async function updateCartItemQuantity(productId, quantity) {
 export async function removeCartItem(productId) {
   const res = await fetch(`${API_BASE}/cart/remove/${productId}`, {
     method: "DELETE",
+    credentials: 'include',
   });
   if (!res.ok) {
     const errorData = await res.json();
@@ -153,6 +170,7 @@ export async function checkoutCart() {
   const res = await fetch(`${API_BASE}/cart/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: 'include',
   });
   if (!res.ok) {
     const errorData = await res.json();
@@ -248,6 +266,28 @@ export async function fetchDeals() {
   if (!res.ok) {
     const errorData = await res.json();
     throw new Error(errorData.error || "Failed to fetch deals data");
+  }
+  return res.json();
+}
+
+export async function seedBrands() {
+  const res = await fetch(`${API_BASE}/brands/seed`, {
+    method: "POST",
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Failed to seed brands");
+  }
+  return res.json();
+}
+
+export async function applyDeals() {
+  const res = await fetch(`${API_BASE}/products/apply_deals`, {
+    method: "POST",
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Failed to apply deals");
   }
   return res.json();
 }
