@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { fetchCart, updateCartItemQuantity, removeCartItem } from '../services/api';
+import { fetchCart, updateCartItemQuantity, removeCartItem, API_BASE } from '../services/api';
 import { AuthContext } from '../App';
 
 // Quantity validation component
@@ -82,7 +82,7 @@ function CartPage() {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user } = useContext(AuthContext);
+  const { user, triggerCartRefresh } = useContext(AuthContext);
 
   useEffect(() => {
     loadCart();
@@ -121,6 +121,7 @@ function CartPage() {
   const handleRemoveItem = async (productId) => {
     try {
       await removeCartItem(productId);
+      triggerCartRefresh(); // Trigger cart refresh in Layout
       await loadCart(); // Reload cart after removal
     } catch (error) {
       setError('Failed to remove item');
@@ -192,8 +193,9 @@ function CartPage() {
                 {cart.order_items.map((item) => (
                   <div key={item.id} className="flex items-center gap-4 p-4 border border-gray-700 rounded-lg bg-gray-900">
                     <img 
-                      src={item.product.image_url || 'https://via.placeholder.com/80'} 
+                      src={`http://localhost:5555${item.product.image_url}`} 
                       alt={item.product.name}
+                      crossOrigin="anonymous"
                       className="w-20 h-20 object-cover rounded"
                     />
                     <div className="flex-1">

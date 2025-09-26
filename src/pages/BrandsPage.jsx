@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchBrands, seedBrands } from '../services/api'; // Import fetchBrands and seedBrands
 
 const BrandsPage = () => {
+  const navigate = useNavigate();
   const [brands, setBrands] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -32,6 +34,10 @@ const BrandsPage = () => {
       setMessage(error.message || 'Failed to seed brands');
       console.error('Error seeding brands:', error);
     }
+  };
+
+  const handleViewProducts = (brandName) => {
+    navigate(`/shop?search=${encodeURIComponent(brandName)}`);
   };
 
   if (loading) {
@@ -71,7 +77,7 @@ const BrandsPage = () => {
                 <h2 className="card-title text-xl text-white">{brand.name}</h2>
                 <p className="text-gray-400 text-sm">{brand.description}</p>
                 <div className="card-actions justify-end mt-4">
-                  <button className="btn btn-primary btn-sm">View Products</button>
+                  <button onClick={() => handleViewProducts(brand.name)} className="btn btn-primary btn-sm">View Products</button>
                 </div>
               </div>
             </div>

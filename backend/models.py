@@ -59,11 +59,13 @@ class Product(db.Model, SerializerMixin):
     stock = db.Column(db.Integer, nullable=False, default=0) # Added stock column
     affiliate_link = db.Column(db.String(500), nullable=False) # The actual affiliate link for the product
     affiliate_source_id = db.Column(db.Integer, db.ForeignKey('affiliate_sources.id'), nullable=False)
+    brand_id = db.Column(db.Integer, db.ForeignKey('brands.id'), nullable=False) # Added brand_id column
     deal_percentage = db.Column(db.Float, default=0.0) # New column for deals
 
     order_items = db.relationship('OrderItem', backref='product', lazy=True)
+    brand = db.relationship('Brand', backref='products', lazy=True) # Added brand relationship
 
-    serialize_rules = ('-order_items.product', '-affiliate_source.products')
+    serialize_rules = ('-order_items.product', '-affiliate_source.products', '-brand.products')
 
     def __repr__(self):
         return f'<Product {self.name}>'

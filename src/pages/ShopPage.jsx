@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Search, ShoppingCart, Filter, Star } from 'lucide-react';
-import { fetchProducts, addToCart } from '../services/api';
+import { fetchProducts, addToCart, API_BASE } from '../services/api';
 import { AuthContext } from '../App';
 import { useNavigate, useLocation } from 'react-router-dom'; // Import useNavigate and useLocation
 
@@ -80,7 +80,7 @@ function ShopPage() {
     try {
       await addToCart(productId, 1);
       triggerCartRefresh(); // Trigger cart refresh in Layout
-      navigate('/checkout'); // Redirect to checkout page
+      
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add item to cart');
@@ -222,11 +222,12 @@ function ShopPage() {
           {products.map((product) => (
             <div key={product.id} className="card bg-gray-800 shadow-xl hover:shadow-primary/20 transition-shadow duration-300">
               <figure className="px-4 pt-4">
-                                  <img
-                                    src={product.image_url || 'https://via.placeholder.com/300x300/0000FF/FFFFFF?text=No+Image'}
-                                    alt={product.name}
-                                    className="rounded-xl h-48 w-full object-cover"
-                                  />              </figure>
+<img
+                  src={`http://localhost:5555${product.image_url}`}
+                  alt={product.name}
+                  crossOrigin="anonymous"
+                  className="rounded-xl h-48 w-full object-cover"
+                />              </figure>
               <div className="card-body">
                 <h2 className="card-title text-lg text-white">{product.name}</h2>
                 {product.description && (

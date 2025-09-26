@@ -1,5 +1,5 @@
 // src/services/api.jsx
-const API_BASE = "http://127.0.0.1:5555"; // Changed to local Flask backend URL
+export const API_BASE = "http://localhost:5555"; // Changed to local Flask backend URL
 
 // --- Authentication API functions ---
 export async function loginUser(loginIdentifier, password) {
@@ -262,12 +262,20 @@ export async function fetchBrands() {
 }
 
 export async function fetchDeals() {
-  const res = await fetch(`${API_BASE}/deals`);
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || "Failed to fetch deals data");
+  try {
+    const params = new URLSearchParams();
+    params.append('min_deal_percentage', 1); // Fetch products with at least 1% deal
+
+    const url = `${API_BASE}/products?${params.toString()}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch deals');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching deals:', error);
+    throw error;
   }
-  return res.json();
 }
 
 export async function seedBrands() {
@@ -291,3 +299,4 @@ export async function applyDeals() {
   }
   return res.json();
 }
+

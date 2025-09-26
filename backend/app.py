@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session # Import session
+from flask import Flask, request, jsonify, session, send_from_directory # Import session
 from flask_cors import CORS
 from flask_migrate import Migrate
 from models import db, bcrypt, User, Product, AffiliateSource, Order, OrderItem, SalesData, ProductCategoryData, ShipmentSummaryData, MockAmazonProduct, Brand # Import Brand
@@ -17,6 +17,11 @@ app.json.compact = False
 app.secret_key = os.environ.get('SECRET_KEY', 'a_very_secret_and_random_key_that_should_be_changed_in_production') # Use environment variable for secret key
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax' # Explicitly set SameSite policy
 
+app.config['SESSION_COOKIE_PATH'] = '/' # Explicitly set path
+app.config['SESSION_COOKIE_NAME'] = 'ishop4u_session' # Explicitly set a unique cookie name
+app.config['SESSION_COOKIE_SECURE'] = False # Set to False for HTTP development
+app.config['SESSION_COOKIE_HTTPONLY'] = True # Ensure cookie is HTTP only
+
 CORS(app, supports_credentials=True)
 migrate = Migrate(app, db)
 db.init_app(app)
@@ -31,6 +36,10 @@ def login_required(f):
             return jsonify({'error': 'Unauthorized', 'message': 'Login required'}), 401
         return f(*args, **kwargs)
     return decorated_function
+
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 
 @app.route('/')
 def index():
