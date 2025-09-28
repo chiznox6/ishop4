@@ -13,3 +13,4 @@ pip install -r backend/requirements.txt
 cd backend
 export FLASK_APP=app.py
 flask db upgrade
+python seed.py
