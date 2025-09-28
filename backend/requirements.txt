@@ -6,3 +6,4 @@ SQLAlchemy-serializer
 Flask-Bcrypt
 psycopg2-binary
 gunicorn
+faker
