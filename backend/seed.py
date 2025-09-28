@@ -178,28 +178,27 @@ with app.app_context():
 
     products = []
 
-    for product_data in products_data:
-        # Assign a random brand
-        random_brand = random.choice(brands)
-        
-        # Generate affiliate link
-                affiliate_link = f"{default_affiliate_source.base_url}product/{product_data['name'].replace(" ", "-").lower()}"
-        product = Product(
-            name=product_data["name"],
-            price=product_data["price"],
-            description=product_data["description"],
-            image_url=product_data["image_url"],
-            stock=product_data["stock"],
-            category=product_data["category"],
-            rating=round(random.uniform(3.0, 5.0), 1), # Assign a random rating
-            affiliate_link=affiliate_link,
-            affiliate_source_id=default_affiliate_source.id,
-            brand_id=random_brand.id, # Assign the random brand's ID
-            deal_percentage=random.choice([0, 5, 10, 15, 20]) # Assign a random deal percentage
-        )
-        products.append(product)
-        db.session.add(product)
-    db.session.commit()
+        for product_data in products_data:
+            # Assign a random brand
+            random_brand = random.choice(brands)
+            
+            # Generate affiliate link
+            affiliate_link = f"{default_affiliate_source.base_url}product/{product_data['name'].replace(' ', '-').lower()}"
+            product = Product(
+                name=product_data["name"],
+                price=product_data["price"],
+                description=product_data["description"],
+                image_url=product_data["image_url"],
+                stock=product_data["stock"],
+                category=product_data["category"],
+                rating=round(random.uniform(3.0, 5.0), 1), # Assign a random rating
+                affiliate_link=affiliate_link,
+                affiliate_source_id=default_affiliate_source.id,
+                brand_id=random_brand.id, # Assign the random brand's ID
+                deal_percentage=random.choice([0, 5, 10, 15, 20]) # Assign a random deal percentage
+            )
+            products.append(product)
+            db.session.add(product)    db.session.commit()
 
     # Now, the 'products' list contains all the created Product objects
 
