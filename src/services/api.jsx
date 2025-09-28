@@ -1,5 +1,5 @@
 // src/services/api.jsx
-export const API_BASE = "http://localhost:5555"; // Changed to local Flask backend URL
+export const API_BASE = ""; // Changed to local Flask backend URL
 
 // --- Authentication API functions ---
 export async function loginUser(loginIdentifier, password) {
