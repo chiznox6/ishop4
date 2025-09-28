@@ -10,7 +10,7 @@ from faker import Faker # Import Faker for fake data
 
 fake = Faker()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../dist', static_url_path='/')
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
@@ -429,6 +429,15 @@ def get_deals():
         product_dict['deal_price'] = round(product.price * (1 - product.deal_percentage), 2)
         deals_data.append(product_dict)
     return jsonify(deals_data)
+
+# Catch-all route to serve the React app
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react_app(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
