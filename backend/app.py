@@ -41,9 +41,6 @@ def login_required(f):
 def send_static(path):
     return send_from_directory('static', path)
 
-@app.route('/')
-def index():
-    return '<h1>Phase 4 Project Backend</h1>'
 
 # User Routes
 @app.route('/users', methods=['GET', 'POST'])
