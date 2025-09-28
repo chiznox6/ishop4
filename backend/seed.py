@@ -183,7 +183,7 @@ with app.app_context():
         random_brand = random.choice(brands)
         
         # Generate affiliate link
-                    affiliate_link = f"{default_affiliate_source.base_url}product/{product_data['name'].replace(" ", "-").lower()}"
+                affiliate_link = f"{default_affiliate_source.base_url}product/{product_data['name'].replace(" ", "-").lower()}"
         product = Product(
             name=product_data["name"],
             price=product_data["price"],
